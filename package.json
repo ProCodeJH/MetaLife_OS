@@ -1,0 +1,81 @@
+{
+  "name": "metalifeos",
+  "version": "1.0.0",
+  "description": "통합 AI 생산성 및 자동화 플랫폼",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "api:dev": "cd apps/api && uvicorn main:app --reload --port 8000",
+    "agent:local": "cd agents/agent-local && python cli.py chat",
+    "agent:glm": "cd agents/agent-glm && python cli.py setup",
+    "content:worker": "cd apps/content-automation && python cli.py worker",
+    "setup": "npm install && cd apps/api && pip install -r requirements.txt",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose -f docker-compose.yml up",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "framer-motion": "^10.16.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-dropdown-menu": "^2.0.0",
+    "@radix-ui/react-tabs": "^1.0.0",
+    "lucide-react": "^0.284.0",
+    "axios": "^1.5.0",
+    "socket.io-client": "^4.7.0",
+    "zustand": "^4.4.0",
+    "react-query": "^3.39.0",
+    "react-hook-form": "^7.45.0",
+    "zod": "^3.22.0",
+    "@hookform/resolvers": "^3.2.0"
+  },
+  "devDependencies": {
+    "@next/eslint-config-next": "^14.0.0",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0",
+    "jest": "^29.6.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "agents/*"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "automation",
+    "productivity",
+    "content-creation",
+    "web-development",
+    "korean",
+    "typescript"
+  ],
+  "author": "MetaLife OS Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/metalifeos.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/metalifeos/issues"
+  },
+  "homepage": "https://metalifeos.com"
+}
