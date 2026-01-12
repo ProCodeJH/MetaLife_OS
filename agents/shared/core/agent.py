@@ -107,6 +107,65 @@ class OpenAIProvider(BaseProvider):
         }
 
 
+class GeminiProvider(BaseProvider):
+    """Google AI Studio (Gemini) 제공자"""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "gemini-2.0-flash-exp",
+        temperature: float = 0.7,
+    ):
+        self.api_key = api_key
+        self.model = model
+        self.temperature = temperature
+        self._client = None
+        self._initialized = False
+
+    def _init_client(self):
+        """Gemini 클라이언트 초기화"""
+        if self._initialized:
+            return
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=self.api_key)
+            self._client = genai.GenerativeModel(
+                model_name=self.model,
+                generation_config={
+                    "temperature": self.temperature,
+                    "max_output_tokens": 8192,
+                },
+            )
+            self._initialized = True
+            logger.info(f"Gemini 클라이언트 초기화: {self.model}")
+        except ImportError:
+            raise ImportError("google-generativeai 패키지 필요")
+
+    async def generate(self, prompt: str, **kwargs) -> str:
+        self._init_client()
+        import asyncio
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None, lambda: self._client.generate_content(prompt)
+        )
+        return response.text
+
+    async def generate_with_tools(
+        self, prompt: str, tools: List[Dict]
+    ) -> Tuple[str, List[Dict]]:
+        response = await self.generate(prompt)
+        return response, []
+
+    def get_model_info(self) -> Dict[str, Any]:
+        return {
+            "provider": "google",
+            "model": self.model,
+            "capabilities": ["text", "code", "vision", "tools"],
+        }
+
+
+
+
 class OllamaProvider(BaseProvider):
     """Ollama 로컬 LLM 제공자"""
 
@@ -371,6 +430,15 @@ class MetaLifeAgent:
         if self.config.get("zai_api_key"):
             self.providers["glm"] = GLMProvider(api_key=self.config["zai_api_key"])
 
+        # Google Gemini (메인 클라우드 LLM)
+        if self.config.get("google_api_key"):
+            self.providers["gemini"] = GeminiProvider(
+                api_key=self.config["google_api_key"],
+                model=self.config.get("gemini_model", "gemini-2.0-flash-exp"),
+            )
+            logger.info("Gemini Provider 초기화 완료")
+
+
     def _initialize_tools(self):
         """툴 초기화"""
 
@@ -474,15 +542,18 @@ class MetaLifeAgent:
         # 에이전트 타입 명시적 지정
         if task.agent_type == AgentType.LOCAL and "ollama" in self.providers:
             return self.providers["ollama"]
-        elif task.agent_type == AgentType.CLOUD and "openai" in self.providers:
-            return self.providers["openai"]
+        elif task.agent_type == AgentType.CLOUD:
+            # 클라우드: Gemini 우선, 그 다음 OpenAI
+            return self.providers.get("gemini") or self.providers.get("openai")
 
-        # 기본 전략: 로컬 우선
+        # 기본 전략: Gemini 우선 (비용 효율), 그 다음 로컬, OpenAI
         return (
-            self.providers.get("ollama")
+            self.providers.get("gemini")
+            or self.providers.get("ollama")
             or self.providers.get("openai")
             or self.providers.get("glm")
         )
+
 
     def _build_prompt(self, task: AgentTask) -> str:
         """태스크 기반 프롬프트 구성"""

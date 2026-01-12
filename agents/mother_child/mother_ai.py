@@ -44,6 +44,7 @@ class ChildProposal:
     """Child AI의 제안"""
 
     id: str
+    child_id: str  # Child AI의 식별자 추가
     child_type: ChildType
     content: str
     reasoning: str
@@ -51,6 +52,7 @@ class ChildProposal:
     score: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
+
 
 
 @dataclass
@@ -157,6 +159,7 @@ class ReasoningChild(BaseChildAI):
 
         return ChildProposal(
             id=str(uuid.uuid4()),
+            child_id=self.child_id,
             child_type=ChildType.REASONING,
             content=f"논리적 해결책: {self._generate_solution(steps)}",
             reasoning=reasoning.strip(),
@@ -216,6 +219,7 @@ class CritiqueChild(BaseChildAI):
 
         return ChildProposal(
             id=str(uuid.uuid4()),
+            child_id=self.child_id,
             child_type=ChildType.CRITIQUE,
             content=f"비판적 개선안: {self._generate_critique(weaknesses)}",
             reasoning=reasoning.strip(),
@@ -266,6 +270,7 @@ class VerificationChild(BaseChildAI):
 
         return ChildProposal(
             id=str(uuid.uuid4()),
+            child_id=self.child_id,
             child_type=ChildType.VERIFICATION,
             content=f"검증된 해결책: {self._generate_verified_solution()}",
             reasoning=reasoning.strip(),
